@@ -14,7 +14,7 @@ local function GetNodeName()
 
     -- Set the tooltip to the object under the cursor
     tooltip:SetOwner(UIParent, "ANCHOR_NONE")
-    tooltip:SetUnit("mouseover")  -- Triggers tooltip for the mouseovered object
+    tooltip:SetUnit("mouseover") -- Triggers tooltip for the mouseovered object
 
     -- Get the first line of the tooltip (usually the name of the node or herb)
     local nodeName = GameTooltipTextLeft1:GetText()
@@ -27,19 +27,11 @@ local function GetNodeName()
     end
 end
 
--- Function to check if the player can mine
-local function CanMine()
-    return IsSpellKnown(2575) or IsSpellKnown(2580) -- Example spell IDs for mining
-end
-
--- Function to check if the player can herb
-local function CanHerb()
-    return IsSpellKnown(2366) -- Example spell ID for herbalism
-end
-
 -- Function to announce the location of nodes/herbs
 local function AnnounceNodeOrHerb(message)
-    if IsInInstance() then return end
+    if IsInInstance() then
+        return
+    end
 
     local currentTime = GetTime()
     if currentTime - lastAnnounce >= announceCooldown then
@@ -63,6 +55,50 @@ local function AnnounceNodeOrHerb(message)
     end
 end
 
+-- Function to get the player's current skill level for a specific profession
+local function GetSkillIndexByName(skillName)
+    for i = 1, GetNumSkillLines() do
+        local skillLineName = GetSkillLineInfo(i)
+        if skillLineName == skillName then
+            return i
+        end
+    end
+    return nil
+end
+
+-- Function to check if the player's skill level is too low or not trained
+local function IsSkillTooLow(message)
+    -- Detect if the error message contains "Requires Mining" or "Requires Herbalism"
+    local miningMatch = message:match("Requires Mining (%d+)")
+    local herbMatch = message:match("Requires Herbalism (%d+)")
+
+    -- Case 1: The skill level isn't high enough
+    if miningMatch then
+        local requiredSkill = tonumber(miningMatch)
+        local miningSkillIndex = GetSkillIndexByName("Mining")
+        if miningSkillIndex then
+            local currentSkill = select(4, GetSkillLineInfo(miningSkillIndex))
+            return currentSkill < requiredSkill
+        end
+    elseif herbMatch then
+        local requiredSkill = tonumber(herbMatch)
+        local herbSkillIndex = GetSkillIndexByName("Herbalism")
+        if herbSkillIndex then
+            local currentSkill = select(4, GetSkillLineInfo(herbSkillIndex))
+            return currentSkill < requiredSkill
+        end
+    end
+
+    -- Case 2: The player doesn't know the profession at all
+    if message == "Requires Mining" then
+        return true -- Player hasn't trained Mining
+    elseif message == "Requires Herbalism" then
+        return true -- Player hasn't trained Herbalism
+    end
+
+    return false
+end
+
 -- Create a frame to handle events
 local frame = CreateFrame("Frame")
 
@@ -70,24 +106,24 @@ local frame = CreateFrame("Frame")
 frame:RegisterEvent("UI_ERROR_MESSAGE")
 
 -- Event handler function
-frame:SetScript("OnEvent", function(_, event, messageID, message)
-    -- Check the text of the error message instead of relying on the message ID
-    if message == "Requires Herbalism" and not CanHerb() then
-        -- Get the herb name from the tooltip
-        local herbName = GetNodeName() or "an herb"
+frame:SetScript(
+    "OnEvent",
+    function(_, event, messageID, message)
+        if message and IsSkillTooLow(message) then
+            -- Get the node name from the tooltip
+            local nodeName = GetNodeName() or "a resource"
 
-        -- Format the announcement with the herb name
-        local announceMessage = "{rt7} Come & Get It : Hey Herbalists, I found " .. herbName
-        AnnounceNodeOrHerb(announceMessage)
-    elseif message == "Requires Mining" and not CanMine() then
-        -- Get the node name from the tooltip
-        local nodeName = GetNodeName() or "some ore"
-
-        -- Format the announcement with the node name
-        local announceMessage = "{rt7} Come & Get It : Hey Miners, I found " .. nodeName
-        AnnounceNodeOrHerb(announceMessage)
+            -- Check if the error is related to Herbalism or Mining
+            if message:find("Herbalism") then
+                local announceMessage = "{rt7} Come & Get It : Hey Herbalists, I found " .. nodeName
+                AnnounceNodeOrHerb(announceMessage)
+            elseif message:find("Mining") then
+                local announceMessage = "{rt7} Come & Get It : Hey Miners, I found " .. nodeName
+                AnnounceNodeOrHerb(announceMessage)
+            end
+        end
     end
-end)
+)
 
 -- Function to send a message to the General channel manually
 local function SendMessageToGeneral(message)
@@ -101,13 +137,16 @@ local function SendMessageToGeneral(message)
 end
 
 -- Right-click binding to send the message
-frame:SetScript("OnMouseDown", function(self, button)
-    if button == "RightButton" then
-        -- Manually trigger the message
-        local message = "{rt7} Come & Get It : Check the zone for resources!"
-        SendMessageToGeneral(message) -- This call is safe because it's bound to a mouse click
+frame:SetScript(
+    "OnMouseDown",
+    function(self, button)
+        if button == "RightButton" then
+            -- Manually trigger the message
+            local message = "{rt7} Come & Get It : Check the zone for resources!"
+            SendMessageToGeneral(message) -- This call is safe because it's bound to a mouse click
+        end
     end
-end)
+)
 
 -- Make the frame clickable
 frame:EnableMouse(true)
@@ -129,7 +168,10 @@ eventFrame:SetScript("OnMouseUp", OnRightClick)
 eventFrame:RegisterEvent("UPDATE_MOUSEOVER_UNIT")
 
 -- Ensure the event frame is active when the UI is loaded
-eventFrame:SetScript("OnEvent", function(self, event, ...)
-    -- Enable mouse interaction
-    self:EnableMouse(true)
-end)
+eventFrame:SetScript(
+    "OnEvent",
+    function(self, event, ...)
+        -- Enable mouse interaction
+        self:EnableMouse(true)
+    end
+)
