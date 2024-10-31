@@ -115,10 +115,12 @@ frame:SetScript(
 
             -- Check if the error is related to Herbalism or Mining
             if message:find("Herbalism") then
-                local announceMessage = "{rt7} Come & Get It : Hey Herbalists, I found " .. nodeName
+                local announceMessage =
+                    "{rt7} Come & Get It : Hey Herbalists, I found some " .. nodeName .. " that I can't use"
                 AnnounceNodeOrHerb(announceMessage)
             elseif message:find("Mining") then
-                local announceMessage = "{rt7} Come & Get It : Hey Miners, I found " .. nodeName
+                local announceMessage =
+                    "{rt7} Come & Get It : Hey Miners, I found a " .. nodeName .. " that I can't use"
                 AnnounceNodeOrHerb(announceMessage)
             end
         end
