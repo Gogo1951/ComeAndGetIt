@@ -30,7 +30,7 @@ Gogo1951 on Discord.
 
 🟡 Season of Discovery (Minimal Testing)
 
-🔴 Cataclysm Classic (Not Tested)
+🟡 Cataclysm Classic (Minimal Testing)
 
 🔴 Retail (Not Tested)
 
