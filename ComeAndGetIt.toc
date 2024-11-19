@@ -1,7 +1,7 @@
 ## Title: Come & Get It!
 ## Notes: Announce herbs or ore that you can't use in the zone general chat.
 ## Author: Gogo1951
-## Version: 1.0
+## Version: @project-version@
 
 ## X-Curse-Project-ID: 1128926
 
