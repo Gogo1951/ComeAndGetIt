@@ -14,7 +14,7 @@ You can find this on Curseforge.
 
 https://www.curseforge.com/wow/addons/come-get-it
 
-## Testing Notes
+## Testing Status
 
 🟢 World of Warcraft Classic : Classic Era
 
@@ -38,4 +38,4 @@ You can find this project on GitHub.
 
 https://github.com/Gogo1951/ComeAndGetIt
 
-Gogo1951 on Discord.
+😈 Gogo1951 on Discord.
