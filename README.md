@@ -14,6 +14,24 @@ You can find this on Curseforge.
 
 https://www.curseforge.com/wow/addons/come-get-it
 
+## Testing Notes
+
+🟢 World of Warcraft Classic : Classic Era
+
+🟢 World of Warcraft Classic : Hardcore
+
+🟢 World of Warcraft Classic : Season of Discovery
+
+🟢 World of Warcraft Classic : Anniversary Realms
+
+🟢 World of Warcraft Classic : Hardcore Anniversary Realms
+
+🔴 Cataclysm Classic
+
+🔴 World of Warcraft
+
+Please reach out if you would like to be involved with testing!
+
 ## Report Issues & Get Involved
 
 You can find this project on GitHub.
@@ -21,17 +39,3 @@ You can find this project on GitHub.
 https://github.com/Gogo1951/ComeAndGetIt
 
 Gogo1951 on Discord.
-
-## Testing Notes
-
-🟢 Classic Era
-
-🟢 Classic Hardcore
-
-🟡 Season of Discovery (Minimal Testing)
-
-🟡 Cataclysm Classic (Minimal Testing)
-
-🔴 Retail (Not Tested)
-
-Please reach out if you would like to be involved with testing!
