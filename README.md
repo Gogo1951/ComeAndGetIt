@@ -1,8 +1,8 @@
 # Come & Get It!
 
-A simple add-on that allows you to easily broadcast the location of mineral veins, herbs, and treasure chests that you can't use yourself.
+A simple add-on to broadcast the location of mineral veins, herbs, and treasure chests that you can't use yourself.
 
-Right-click on a node, and Come & Get It! will prepare a message in your /1 channel:
+Simply right-click on a node or chest, and Come & Get It will automatically prepare a message for your /1 General chat channel:
 
 > {rt7} Come & Get It : Hey Miners, I came across a {Mineral Vein} that I can't mine at 25.5, 54.2!
 
@@ -10,7 +10,7 @@ Right-click on a node, and Come & Get It! will prepare a message in your /1 chan
 
 > {rt7} Come & Get It : Hey Rogues, I came across a locked {Treasure Chest} that I can't open at 18.3, 39.2!
 
-The message won't be sent until you hit enter, so if you'd rather send it to your guild, friends, or another channel, feel free to edit it.
+Customizable Messaging: The message won't be sent until you hit Enter, giving you the flexibility to edit it or share it with your guild, party, or friends instead.
 
 ## Download
 
