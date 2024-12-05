@@ -5,7 +5,7 @@
 
 ## X-Curse-Project-ID: 1128926
 
-## Interface: 110005, 40401, 11505
+## Interface: 11505
 
 ComeAndGetIt.lua
 
