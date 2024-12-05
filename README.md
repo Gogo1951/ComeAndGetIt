@@ -1,6 +1,6 @@
 # Come & Get It!
 
-A simple add-on that allows you to easily broadcast the location of herbs or ore that you can't gather.
+A simple add-on that allows you to easily broadcast the location of mineral veins, herbs, and treasure chests that you can't use yourself.
 
 Right-click on a node, and Come & Get It! will prepare a message in your /1 channel:
 
