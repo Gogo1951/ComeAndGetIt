@@ -4,7 +4,11 @@ A simple add-on that allows you to easily broadcast the location of herbs or ore
 
 Right-click on a node, and Come & Get It! will prepare a message in your /1 channel:
 
-> "{rt7} Come & Get It : Hey Miners, I came across a Rich Thorium Vein that I can't use at 35.6, 67.8!"
+> {rt7} Come & Get It : Hey Miners, I came across a {Mineral Vein} that I can't mine at 25.5, 54.2!
+
+> {rt7} Come & Get It : Hey Herbalists, I came across some {Herb} that I can't pick at 18.2, 36.5!
+
+> {rt7} Come & Get It : Hey Rogues, I came across a locked {Treasure Chest} that I can't open at 18.3, 39.2!
 
 The message won't be sent until you hit enter, so if you'd rather send it to your guild, friends, or another channel, feel free to edit it.
 
