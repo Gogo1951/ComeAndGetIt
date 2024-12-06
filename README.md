@@ -30,7 +30,7 @@ https://www.curseforge.com/wow/addons/come-get-it
 
 🟢 World of Warcraft Classic : Hardcore Anniversary Realms
 
-🔴 Cataclysm Classic
+🟢 Cataclysm Classic
 
 🔴 World of Warcraft
 
