@@ -1,33 +1,22 @@
-# Open Sesame!
+# Come & Get It
 
-A simple add-on that automatically opens clams & containers in your inventory.
+A simple add-on to broadcast the location of mineral veins, herbs, and treasure chests that you can't use yourself.
 
-❗ **Auto Loot must be enabled for Open Sesame! to work correctly!**
+Simply right-click on a node or chest, and Come & Get It will automatically prepare a message for your /1 General chat channel:
 
-⚙️ Open Sesame! under the following conditions:
+> {rt7} Come & Get It : Hey Miners, I came across a {Mineral Vein} that I can't mine at 25.5, 54.2!
 
-- You are not in combat (anything looted during combat will be opened as soon as combat is over).
-- You are not actively trying to loot something else.
-- You are not actively trading with another player.
-- You are not actively crafting.
-- The container is not locked.
-- The container did not drop off a "current" raid boss.
-- The container is Bind on Pickup (BoP), and is not tradable.
-- The container is tradable, but does not contain a BoP item.
-- The container is tradable, but does not contain a unique item.
-- You do not have a Merchant Window Open.
-- You do not have the Auction House Window Open
-- You do not have your Bank Window Open.
-- You do not have your Guild Bank Window Open.
-- You do not have your Mailbox Window Open.
+> {rt7} Come & Get It : Hey Herbalists, I came across some {Herb} that I can't pick at 18.2, 36.5!
 
-🚫 **The "UseContainerItem" API call no longer works on clams. This likely has something to do with the "[Clam Weaving](https://www.youtube.com/watch?v=h3YO7jeoOWs)" hack.**
+> {rt7} Come & Get It : Hey Rogues, I came across a locked {Treasure Chest} that I can't open at 18.3, 39.2!
+
+Customizable Messaging: The message won't be sent until you hit Enter, giving you the flexibility to edit it or share it with your guild, party, or friends instead.
 
 ## Download
 
 You can find this on Curseforge.
 
-https://www.curseforge.com/wow/addons/open-sesame
+https://www.curseforge.com/wow/addons/come-get-it
 
 ## Testing Status
 
@@ -35,13 +24,13 @@ https://www.curseforge.com/wow/addons/open-sesame
 
 🟢 World of Warcraft Classic : Hardcore
 
-🟡 World of Warcraft Classic : Season of Discovery
+🟢 World of Warcraft Classic : Season of Discovery
 
 🟢 World of Warcraft Classic : Anniversary Realms
 
 🟢 World of Warcraft Classic : Hardcore Anniversary Realms
 
-🔴 Cataclysm Classic
+🟢 Cataclysm Classic
 
 🔴 World of Warcraft
 
@@ -51,19 +40,6 @@ Please reach out if you would like to be involved with testing!
 
 You can find this project on GitHub.
 
-https://github.com/Gogo1951/Open-Sesame
+https://github.com/Gogo1951/ComeAndGetIt
 
 😈 Gogo1951 on Discord.
-
-## History
-
-👏 **I didn't create this add-on, I just updated it.**
-
-Looking around CurseForge, it looks like the bulk of the original code came from kAutoOpen.
-
-- [Auto Open Items](https://www.curseforge.com/wow/addons/auto-open-items)
-- [AutoClam](https://www.curseforge.com/wow/addons/autoclam)
-- [AutoOpen](https://www.curseforge.com/wow/addons/autoopen)
-- [kAutoOpen Dragonflight](https://www.curseforge.com/wow/addons/kautoopen-dragonflight)
-- [kAutoOpen](https://www.curseforge.com/wow/addons/kautoopen)
-- [Openables (Weak Aura)](https://wago.io/gtRVJZetK)
