@@ -1,76 +1,85 @@
 local addonName, addonTable = ...
 
 local lastAnnounce = 0
-local announceCooldown = 5 -- seconds
+local ANNOUNCE_COOLDOWN = 5 -- seconds
+
+local parentFrame = UIParent -- Cache UIParent reference
 
 -- Create a hidden tooltip for node scanning
-local tooltip = CreateFrame("GameTooltip", "NodeScanTooltip", UIParent, "GameTooltipTemplate")
-tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+local tooltip = CreateFrame("GameTooltip", "NodeScanTooltip", parentFrame, "GameTooltipTemplate")
+tooltip:SetOwner(parentFrame, "ANCHOR_NONE")
 
--- Function to get node or resource name from the tooltip
+-- Retrieves the name of the resource from the tooltip
 local function GetNodeName()
     tooltip:ClearLines()
-    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
-    tooltip:SetUnit("mouseover") -- Triggers tooltip for the mouseovered object
-    return GameTooltipTextLeft1:GetText() or nil
+    tooltip:SetUnit("mouseover") -- Triggers tooltip for the hovered object
+    return GameTooltipTextLeft1 and GameTooltipTextLeft1:GetText() or nil
 end
 
--- Function to announce the location of nodes/resources
+-- Announces the location of nodes/resources if conditions are met
 local function AnnounceResource(role, prefix, nodeName, defaultNode, action)
     if IsInInstance() then
         return
     end
 
     local currentTime = GetTime()
-    if currentTime - lastAnnounce < announceCooldown then
+    if (currentTime - lastAnnounce) < ANNOUNCE_COOLDOWN then
         return
     end
 
     local mapID = C_Map.GetBestMapForUnit("player")
-    local mapPosition = C_Map.GetPlayerMapPosition(mapID, "player")
-    if not mapPosition then
+    if not mapID then
         return
     end
 
-    local x = string.format("%.1f", mapPosition.x * 100)
-    local y = string.format("%.1f", mapPosition.y * 100)
+    local mapPosition = C_Map.GetPlayerMapPosition(mapID, "player")
+    local mapInfo = C_Map.GetMapInfo(mapID)
+    if not mapPosition or not mapInfo then
+        return
+    end
+
+    local x, y = string.format("%.1f", mapPosition.x * 100), string.format("%.1f", mapPosition.y * 100)
+    local zoneName = mapInfo.name or "Unknown Zone"
     local node = nodeName or defaultNode
+
+    if not node then
+        return
+    end -- Ensure node is valid
+
     local message =
         string.format(
-        "{rt7} Come & Get It : Hey %s, I came across %s %s that I can't %s at %s, %s!",
+        "{rt7} Come & Get It : Hey %s, I came across %s %s that I can't %s at %s, %s in %s!",
         role,
         prefix,
         node,
         action,
         x,
-        y
+        y,
+        zoneName
     )
 
     ChatFrame_OpenChat("/1 " .. message, ChatFrame1)
     lastAnnounce = currentTime
 end
 
--- Mapping error IDs and roles
+-- Error message mapping for resource gathering roles
 local errorMapping = {
     [268] = {role = "Rogues", prefix = "a locked", defaultNode = "TREASURE CHEST", action = "open"}, -- "Item is locked"
     ["Herbalism"] = {role = "Herbalists", prefix = "some", defaultNode = "HERB NAME", action = "pick"},
     ["Mining"] = {role = "Miners", prefix = "a", defaultNode = "MINERAL VEIN", action = "mine"}
 }
 
--- Create a frame to handle events
+-- Create event handling frame
 local frame = CreateFrame("Frame")
-
--- Register the UI_ERROR_MESSAGE event
 frame:RegisterEvent("UI_ERROR_MESSAGE")
 
--- Event handler function
+-- Handles error messages and triggers announcements
 frame:SetScript(
     "OnEvent",
     function(_, _, messageID, message)
         local mapping = errorMapping[messageID] or errorMapping[message:match("Requires (%w+)")]
         if mapping then
-            local nodeName = GetNodeName()
-            AnnounceResource(mapping.role, mapping.prefix, nodeName, mapping.defaultNode, mapping.action)
+            AnnounceResource(mapping.role, mapping.prefix, GetNodeName(), mapping.defaultNode, mapping.action)
         end
     end
 )
