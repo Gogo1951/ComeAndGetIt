@@ -16,6 +16,19 @@ local function GetNodeName()
     return GameTooltipTextLeft1 and GameTooltipTextLeft1:GetText() or nil
 end
 
+-- Function to retrieve current layer (returns nil if not detectable)
+local function GetCurrentLayer()
+    local channelList = {GetChannelList()}
+    for i = 1, #channelList, 3 do
+        local name = channelList[i + 1]
+        local layer = name and name:match("Layer (%d+)")
+        if layer then
+            return tonumber(layer)
+        end
+    end
+    return nil -- No layer detected
+end
+
 -- Announces the location of nodes/resources if conditions are met
 local function AnnounceResource(role, prefix, nodeName, defaultNode, action)
     if IsInInstance() then
@@ -46,16 +59,20 @@ local function AnnounceResource(role, prefix, nodeName, defaultNode, action)
         return
     end -- Ensure node is valid
 
+    local layer = GetCurrentLayer()
+    local layerText = layer and string.format(" (Layer %d)", layer) or ""
+
     local message =
         string.format(
-        "{rt7} Come & Get It : Hey %s, I came across %s %s that I can't %s at %s, %s in %s!",
+        "{rt7} Come & Get It : Hey %s, I came across %s %s that I can't %s at %s, %s in %s%s!",
         role,
         prefix,
         node,
         action,
         x,
         y,
-        zoneName
+        zoneName,
+        layerText
     )
 
     ChatFrame_OpenChat("/1 " .. message, ChatFrame1)
