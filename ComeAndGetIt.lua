@@ -1,69 +1,64 @@
 local addonName, addonTable = ...
 
 local lastAnnounce = 0
-local ANNOUNCE_COOLDOWN = 5 -- seconds
+local ANNOUNCE_COOLDOWN = 5
 
-local parentFrame = UIParent -- Cache UIParent reference
+local gsub, format, tonumber = string.gsub, string.format, tonumber
+local GetTime, IsInInstance = GetTime, IsInInstance
+local GetBestMapForUnit = C_Map.GetBestMapForUnit
+local GetPlayerMapPosition = C_Map.GetPlayerMapPosition
+local GetMapInfo = C_Map.GetMapInfo
+local OpenChat = ChatFrame_OpenChat
 
--- Create a hidden tooltip for node scanning
-local tooltip = CreateFrame("GameTooltip", "NodeScanTooltip", parentFrame, "GameTooltipTemplate")
-tooltip:SetOwner(parentFrame, "ANCHOR_NONE")
-
--- Retrieves the name of the resource from the tooltip
 local function GetNodeName()
-    tooltip:ClearLines()
-    tooltip:SetUnit("mouseover") -- Triggers tooltip for the hovered object
-    return GameTooltipTextLeft1 and GameTooltipTextLeft1:GetText() or nil
+    local fs = _G.GameTooltipTextLeft1
+    return fs and fs:GetText() or nil
 end
 
--- Function to retrieve current layer (returns nil if not detectable)
 local function GetCurrentLayer()
-    local channelList = {GetChannelList()}
-    for i = 1, #channelList, 3 do
-        local name = channelList[i + 1]
+    local list = {GetChannelList()}
+    for i = 1, #list, 3 do
+        local name = list[i + 1]
         local layer = name and name:match("Layer (%d+)")
         if layer then
             return tonumber(layer)
         end
     end
-    return nil -- No layer detected
+    return nil
 end
 
--- Announces the location of nodes/resources if conditions are met
 local function AnnounceResource(role, prefix, nodeName, defaultNode, action)
     if IsInInstance() then
         return
     end
-
-    local currentTime = GetTime()
-    if (currentTime - lastAnnounce) < ANNOUNCE_COOLDOWN then
+    local now = GetTime()
+    if (now - lastAnnounce) < ANNOUNCE_COOLDOWN then
         return
     end
 
-    local mapID = C_Map.GetBestMapForUnit("player")
+    local mapID = GetBestMapForUnit("player")
     if not mapID then
         return
     end
 
-    local mapPosition = C_Map.GetPlayerMapPosition(mapID, "player")
-    local mapInfo = C_Map.GetMapInfo(mapID)
-    if not mapPosition or not mapInfo then
+    local pos = GetPlayerMapPosition(mapID, "player")
+    local mapInfo = GetMapInfo(mapID)
+    if not pos or not mapInfo then
         return
     end
 
-    local x, y = string.format("%.1f", mapPosition.x * 100), string.format("%.1f", mapPosition.y * 100)
+    local x, y = format("%.1f", pos.x * 100), format("%.1f", pos.y * 100)
     local zoneName = mapInfo.name or "Unknown Zone"
     local node = nodeName or defaultNode
-
-    if not node then
+    if not node or node == "" then
         return
-    end -- Ensure node is valid
+    end
 
     local layer = GetCurrentLayer()
-    local layerText = layer and string.format(" (Layer %d)", layer) or ""
+    local layerText = layer and format(" (Layer %d)", layer) or ""
 
-    local message =
-        string.format(
+    local msg =
+        format(
         "{rt7} Come & Get It : Hey %s, I came across %s %s that I can't %s at %s, %s in %s%s!",
         role,
         prefix,
@@ -75,26 +70,37 @@ local function AnnounceResource(role, prefix, nodeName, defaultNode, action)
         layerText
     )
 
-    ChatFrame_OpenChat("/1 " .. message, ChatFrame1)
-    lastAnnounce = currentTime
+    OpenChat("/1 " .. msg, ChatFrame1)
+    lastAnnounce = now
 end
 
--- Error message mapping for resource gathering roles
 local errorMapping = {
-    [268] = {role = "Rogues", prefix = "a locked", defaultNode = "TREASURE CHEST", action = "open"}, -- "Item is locked"
-    ["Herbalism"] = {role = "Herbalists", prefix = "some", defaultNode = "HERB NAME", action = "pick"},
-    ["Mining"] = {role = "Miners", prefix = "a", defaultNode = "MINERAL VEIN", action = "mine"}
+    [268] = {role = "Rogues", prefix = "a locked", defaultNode = "TREASURE CHEST", action = "open"},
+    Herbalism = {role = "Herbalists", prefix = "some", defaultNode = "HERB NAME", action = "pick"},
+    Mining = {role = "Miners", prefix = "a", defaultNode = "MINERAL VEIN", action = "mine"}
 }
 
--- Create event handling frame
+local function lookupMapping(messageID, message)
+    local m = errorMapping[messageID]
+    if m then
+        return m
+    end
+    local skill = message and message:match("Requires%s+([%a ]+)")
+    if not skill then
+        skill = message and message:match("Requires(%a+)")
+    end
+    if skill then
+        skill = gsub(skill, "^%s*(.-)%s*$", "%1")
+        return errorMapping[skill]
+    end
+end
+
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("UI_ERROR_MESSAGE")
-
--- Handles error messages and triggers announcements
 frame:SetScript(
     "OnEvent",
     function(_, _, messageID, message)
-        local mapping = errorMapping[messageID] or errorMapping[message:match("Requires (%w+)")]
+        local mapping = lookupMapping(messageID, message)
         if mapping then
             AnnounceResource(mapping.role, mapping.prefix, GetNodeName(), mapping.defaultNode, mapping.action)
         end
