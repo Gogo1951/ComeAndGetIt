@@ -1,25 +1,39 @@
 local addonName, addonTable = ...
 
-local lastAnnounce = 0
+-- Constants
 local ANNOUNCE_COOLDOWN = 5
+local ERROR_LOCKED_CHEST = 268
 
-local gsub, format, tonumber = string.gsub, string.format, tonumber
+-- Cache frequently used functions
 local GetTime, IsInInstance = GetTime, IsInInstance
 local GetBestMapForUnit = C_Map.GetBestMapForUnit
 local GetPlayerMapPosition = C_Map.GetPlayerMapPosition
 local GetMapInfo = C_Map.GetMapInfo
 local OpenChat = ChatFrame_OpenChat
+local format = string.format
+local match = string.match
 
+-- State
+local lastAnnounce = 0
+
+-- Error message mappings
+local errorMapping = {
+    [ERROR_LOCKED_CHEST] = {role = "Rogues", prefix = "a locked", defaultNode = "TREASURE CHEST", action = "open"},
+    ["Herbalism"] = {role = "Herbalists", prefix = "some", defaultNode = "HERB NAME", action = "pick"},
+    ["Mining"] = {role = "Miners", prefix = "a", defaultNode = "MINERAL VEIN", action = "mine"}
+}
+
+-- Helper function to get tooltip text
 local function GetNodeName()
     local fs = _G.GameTooltipTextLeft1
     return fs and fs:GetText() or nil
 end
 
+-- Get current layer from channel list
 local function GetCurrentLayer()
     local list = {GetChannelList()}
-    for i = 1, #list, 3 do
-        local name = list[i + 1]
-        local layer = name and name:match("Layer (%d+)")
+    for i = 2, #list, 3 do -- Start at 2 since channel names are at indices 2, 5, 8, etc.
+        local layer = match(list[i], "Layer (%d+)")
         if layer then
             return tonumber(layer)
         end
@@ -27,43 +41,57 @@ local function GetCurrentLayer()
     return nil
 end
 
-local function AnnounceResource(role, prefix, nodeName, defaultNode, action)
+-- Build and send announcement message
+local function AnnounceResource(mapping)
+    -- Early exit conditions
     if IsInInstance() then
         return
     end
+
     local now = GetTime()
     if (now - lastAnnounce) < ANNOUNCE_COOLDOWN then
         return
     end
 
+    -- Get map and position data
     local mapID = GetBestMapForUnit("player")
     if not mapID then
         return
     end
 
     local pos = GetPlayerMapPosition(mapID, "player")
-    local mapInfo = GetMapInfo(mapID)
-    if not pos or not mapInfo then
+    if not pos then
         return
     end
 
-    local x, y = format("%.1f", pos.x * 100), format("%.1f", pos.y * 100)
-    local zoneName = mapInfo.name or "Unknown Zone"
-    local node = nodeName or defaultNode
+    local mapInfo = GetMapInfo(mapID)
+    if not mapInfo then
+        return
+    end
+
+    -- Get node name
+    local node = GetNodeName() or mapping.defaultNode
     if not node or node == "" then
         return
     end
 
+    -- Format coordinates
+    local x = format("%.1f", pos.x * 100)
+    local y = format("%.1f", pos.y * 100)
+
+    -- Build message components
+    local zoneName = mapInfo.name or "Unknown Zone"
     local layer = GetCurrentLayer()
     local layerText = layer and format(" (Layer %d)", layer) or ""
 
+    -- Build and send message
     local msg =
         format(
         "{rt7} Come & Get It : Hey %s, I came across %s %s that I can't %s at %s, %s in %s%s!",
-        role,
-        prefix,
+        mapping.role,
+        mapping.prefix,
         node,
-        action,
+        mapping.action,
         x,
         y,
         zoneName,
@@ -74,35 +102,40 @@ local function AnnounceResource(role, prefix, nodeName, defaultNode, action)
     lastAnnounce = now
 end
 
-local errorMapping = {
-    [268] = {role = "Rogues", prefix = "a locked", defaultNode = "TREASURE CHEST", action = "open"},
-    Herbalism = {role = "Herbalists", prefix = "some", defaultNode = "HERB NAME", action = "pick"},
-    Mining = {role = "Miners", prefix = "a", defaultNode = "MINERAL VEIN", action = "mine"}
-}
+-- Look up error mapping based on message ID or content
+local function GetErrorMapping(messageID, message)
+    -- Direct lookup by message ID
+    local mapping = errorMapping[messageID]
+    if mapping then
+        return mapping
+    end
 
-local function lookupMapping(messageID, message)
-    local m = errorMapping[messageID]
-    if m then
-        return m
+    -- Extract skill requirement from message
+    if not message then
+        return nil
     end
-    local skill = message and message:match("Requires%s+([%a ]+)")
-    if not skill then
-        skill = message and message:match("Requires(%a+)")
-    end
+
+    -- Try both patterns for skill extraction
+    local skill = match(message, "Requires%s+([%a ]+)") or match(message, "Requires(%a+)")
+
     if skill then
-        skill = gsub(skill, "^%s*(.-)%s*$", "%1")
+        -- Trim whitespace
+        skill = skill:match("^%s*(.-)%s*$")
         return errorMapping[skill]
     end
+
+    return nil
 end
 
+-- Event handler frame
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("UI_ERROR_MESSAGE")
 frame:SetScript(
     "OnEvent",
     function(_, _, messageID, message)
-        local mapping = lookupMapping(messageID, message)
+        local mapping = GetErrorMapping(messageID, message)
         if mapping then
-            AnnounceResource(mapping.role, mapping.prefix, GetNodeName(), mapping.defaultNode, mapping.action)
+            AnnounceResource(mapping)
         end
     end
 )
